@@ -1,0 +1,38 @@
+<?php
+return [
+    'labels' => [
+        'Order' => '订单',
+        'orders' => '订单',
+    ],
+    'fields' => [
+        'type' => '订单类型',
+        'no' => '订单编号',
+        'user_id' => '用户ID',
+        'address' => '订单地址',
+        'product_amount' => '商品总额',
+        'total_amount' => '订单总额',
+        'remark' => '备足',
+        'is_paid' => '是否支付',
+        'paid_at' => '支付时间',
+        'pay_deadline' => '支付截止时间',
+        'coupon_code_id' => '优惠券ID',
+        'payment_method' => '支付方式',
+        'payment_no' => '支付单号',
+        'is_reviewed' => '是否退款审核',
+        'review' => '审核内容',
+        'reviewed_at' => '退款审核时间',
+        'refund_no' => '退款单号',
+        'refund_status' => '退款状态',
+        'express_company' => '快递公司',
+        'express_freight' => '快递费用',
+        'ship_status' => '物流状态',
+        'ship_data' => '物流数据',
+        'ship_info' => '物流状态',
+        'extra' => '扩展信息',
+        'status' => '订单状态',
+        'is_closed' => '是否关闭',
+        'closed_at' => '关闭时间',
+    ],
+    'options' => [
+    ],
+];

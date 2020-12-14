@@ -1,0 +1,103 @@
+{
+    "data": [
+        {
+            "id": 14,
+            "type": "normal",
+            "category_id": 2,
+            "title": "explicabo",
+            "long_title": "",
+            "description": "Magnam eius tenetur voluptatibus.",
+            "image": "http://shop.test/temp/8.jpg",
+            "on_sale": true,
+            "rating": 3.5,
+            "sold_count": 6,
+            "review_count": 1,
+            "price": "0.01",
+            "created_at": "2019-10-18 17:15:34",
+            "updated_at": "2020-01-20 13:35:11"
+        },
+        {
+            "id": 19,
+            "type": "normal",
+            "category_id": 2,
+            "title": "voluptatem",
+            "long_title": "",
+            "description": "Aut provident necessitatibus dolorem.",
+            "image": "http://shop.test/temp/8.jpg",
+            "on_sale": true,
+            "rating": 3.33,
+            "sold_count": 190,
+            "review_count": 5,
+            "price": "5116.00",
+            "created_at": "2019-10-18 17:15:34",
+            "updated_at": "2019-12-10 11:42:40"
+        },
+        {
+            "id": 22,
+            "type": "normal",
+            "category_id": 2,
+            "title": "quos",
+            "long_title": "",
+            "description": "Fugit omnis eum sint itaque voluptas.",
+            "image": "http://shop.test/temp/6.jpg",
+            "on_sale": true,
+            "rating": 4.17,
+            "sold_count": 220,
+            "review_count": 6,
+            "price": "2260.00",
+            "created_at": "2019-10-18 17:15:34",
+            "updated_at": "2019-10-18 17:15:36"
+        },
+        {
+            "id": 24,
+            "type": "normal",
+            "category_id": 2,
+            "title": "voluptas",
+            "long_title": "",
+            "description": "In facilis dolores porro et.",
+            "image": "http://shop.test/temp/5.jpg",
+            "on_sale": true,
+            "rating": 3.38,
+            "sold_count": 240,
+            "review_count": 10,
+            "price": "1928.00",
+            "created_at": "2019-10-18 17:15:34",
+            "updated_at": "2019-10-18 17:15:36"
+        },
+        {
+            "id": 25,
+            "type": "normal",
+            "category_id": 2,
+            "title": "accusamus",
+            "long_title": "",
+            "description": "Dolor blanditiis maxime laborum.",
+            "image": "http://shop.test/temp/8.jpg",
+            "on_sale": true,
+            "rating": 2.25,
+            "sold_count": 250,
+            "review_count": 5,
+            "price": "2874.00",
+            "created_at": "2019-10-18 17:15:34",
+            "updated_at": "2019-10-18 17:15:36"
+        }
+    ],
+    "meta": {
+        "filters": {
+            "search": "",
+            "order": ""
+        },
+        "category": null,
+        "properties": [],
+        "propertyFilters": [],
+        "pagination": {
+            "total": 68,
+            "count": 5,
+            "per_page": 5,
+            "current_page": 1,
+            "total_pages": 14,
+            "links": {
+                "next": "/?page=2"
+            }
+        }
+    }
+}

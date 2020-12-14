@@ -1,0 +1,24 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "手机配件",
+            "imageUrl": "https://xiaoming.space/temp/8.jpg"
+        },
+        {
+            "id": 10,
+            "name": "电脑配件",
+            "imageUrl": "https://xiaoming.space/temp/8.jpg"
+        },
+        {
+            "id": 17,
+            "name": "电脑整机",
+            "imageUrl": "https://xiaoming.space/temp/8.jpg"
+        },
+        {
+            "id": 24,
+            "name": "手机通讯",
+            "imageUrl": "https://xiaoming.space/temp/8.jpg"
+        }
+    ]
+}

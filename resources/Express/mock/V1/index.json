@@ -1,0 +1,36 @@
+{
+    "status": "0",
+    "msg": "ok",
+    "result": {
+        "number": "4302794259344",
+        "type": "YUNDA",
+        "list": [
+            {
+                "time": "2019-12-10 22:50:32",
+                "status": "【武汉市】已离开 湖北武汉分拨中心；发往 辽宁沈阳分拨中心"
+            },
+            {
+                "time": "2019-12-10 22:44:16",
+                "status": "【武汉市】已离开 湖北武汉分拨中心；发往 辽宁沈阳地区包"
+            },
+            {
+                "time": "2019-12-10 22:10:10",
+                "status": "【武汉市】已到达 湖北武汉分拨中心"
+            },
+            {
+                "time": "2019-12-10 18:49:17",
+                "status": "【武汉市】湖北武汉江汉区新武广公司 已揽收"
+            }
+        ],
+        "deliverystatus": "1",
+        "issign": "0",
+        "expName": "韵达快递",
+        "expSite": "www.yundaex.com",
+        "expPhone": "95546",
+        "logo": "http://img3.fegine.com/express/yd.jpg",
+        "courier": "",
+        "courierPhone": "",
+        "updateTime": "2019-12-10 22:50:32",
+        "takeTime": "0天4小时1分"
+    }
+}
