@@ -95,11 +95,11 @@ class Coupon extends Model
         }
 
         $used = Order::where('user_id', $user->id)
-            ->where('coupon_code_id', $this->id)
+            ->where('coupon_id', $this->id)
             ->where(function($query) {
                 $query->where(function($query) {
                     $query->whereNull('paid_at')
-                        ->where('closed', false);
+                        ->where('is_closed', false);
                 })->orWhere(function($query) {
                     $query->whereNotNull('paid_at')
                         ->where('refund_status', Order::REFUND_STATUS_PENDING);

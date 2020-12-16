@@ -1,20 +1,5 @@
 <?php
 
-/** @var \Laravel\Lumen\Routing\Router $router */
-
-use FastRoute\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
-*/
-
 
 // User           10 0001 ~ 10 0001
 // Authorization  11 0001 ~ 11 0001
@@ -37,6 +22,47 @@ use FastRoute\Route;
 // Product        16 9001 ~ 16 9001
 // Product        17 9001 ~ 17 9001
 
+//@F  order
+//@F  no	                订单编号
+//@F  oupon_id	            优惠券ID
+//@F  type	                类型（normal：正常，seckill：秒杀，crowdfund：众筹）
+//@F  express_company	    物流公司
+//@F  express_freight	    物流费用
+//@F  extra	                扩展信息
+//@F  is_closed	            是否关闭
+//@F  is_reviewed	        是否评论
+//@F  paid_at	            支付时间
+//@F  pay_deadline	        支付截止时间
+//@F  payment_method	    支付方式
+//@F  payment_no	        支付单号
+//@F  refund_status	        退款状态
+//@F  refund_no	            退款单号
+//@F  refund_status	        退款状态
+//@F  remark	            备注
+//@F  ship_data	            物流数据
+//@F  ship_status	        物流状态
+//@F  status	            状态
+//@F  total_amount	        订单总金额
+//@F  created_at	        创建时间
+//@F  updated_at	        更新时间
+//@F  address:              用户地址
+//@F    address	            详细地址
+//@F    contact_name	    联系人
+//@F    contact_phone	    联系电话
+//@F    zip	                邮编
+//@F  items:                产品列表
+//@F    amount	            金额
+//@F    created_at	        创建时间
+//@F    id	                商品ID
+//@F    order_id	        订单ID
+//@F    price	            价格
+//@F    product_id	        产品ID
+//@F    product_sku_id	    产品SKU_ID
+//@F    rating	            评价
+//@F    review	            评论
+//@F    reviewed_at	        评价时间
+//@F    updated_at	        更新时间
+//
 
 
 $api = app('Dingo\Api\Routing\Router');
@@ -88,11 +114,11 @@ $api->version('v1', function ($api) {
             $api->get('imageCode', 'ImageCodeController@index');
 
 
-            //@Pimage-上传图片-image-上传图片
-            //@A[F-image-图片文件,S-type-avatar:头像，topic：主题]
-            //@R[id-图片ID,user_id-用户ID,type-图片类型,path-图片路径]
+            //@Pavatar-上传头像-avatar-上传头像
+            //@A[F-image-图片文件]
+            //@R[created]
             //@M[config:user]
-            $api->post('image', 'ImageController@store');
+            $api->post('avatar', 'ImageController@avatar');
 
             //@PmessageCode-短信验证码-messageCode-短信验证码
             //@A[S-captcha_key-图片验证码key,S-captcha_code-图片验证码,S-phone-手机号]
@@ -135,34 +161,20 @@ $api->version('v1', function ($api) {
         //@V1-order-订单-订单
         $api->group(['prefix' => 'order','namespace' => 'Order'], function ($api) {
             //@Gindex-订单列表--订单列表
-            //@A[I-order_status-订单状态（1：未发货，2：发货中，3：已发货）]
-            //@A[S-include-包含信息（properties，skus，category）]
-            //@R[no-订单编号,type-类型（normal：正常，seckill：秒杀，crowdfund：众筹）]
-            //@R[address-地址@详细地址,zip-地址@邮编,contact_name-地址@联系人,contact_phone-地址@联系电话]
-            //@R[total_amount-订单总金额,remark-备注,paid_at-支付时间,pay_deadline-支付截止时间]
-            //@R[coupon_code_id-优惠券ID,payment_method-支付方式,payment_no-支付单号,refund_status-退款状态]
-            //@R[refund_no-退款单号,closed-是否关闭,reviewed-是否评论,ship_status-物流状态]
-            //@R[express_company-物流数据@物流公司编号,express_no-物流数据@物流单号,express-物流公司]
-            //@R[freight-重量,product_amount-商品金额,extra-扩展信息,status-订单状态]
-            //@R[items-商品数据,created_at-创建时间,updated_at-更新时间]
+            //@A[I-order_status-订单状态（0：全部，1：未发货，2：发货中，3：已发货）]
+            //@R[order]
             //@M[config:user]
             $api->get('/', 'OrderController@index');
 
             //@Gdetail-订单详细-{S|order_no|订单编号}-订单详细
-            //@R[no-订单编号,type-类型（normal：正常，seckill：秒杀，crowdfund：众筹）]
-            //@R[address-地址@详细地址,zip-地址@邮编,contact_name-地址@联系人,contact_phone-地址@联系电话]
-            //@R[total_amount-订单总金额,remark-备注,paid_at-支付时间,pay_deadline-支付截止时间]
-            //@R[coupon_code_id-优惠券ID,payment_method-支付方式,payment_no-支付单号,refund_status-退款状态]
-            //@R[refund_no-退款单号,closed-是否关闭,reviewed-是否评论,ship_status-物流状态]
-            //@R[express-物流公司,freight-重量,product_amount-商品金额,extra-扩展信息,status-订单状态]
-            //@R[items-商品数据,created_at-创建时间,updated_at-更新时间]
+            //@R[order]
             //@M[config:user]
-            $api->get('/{orderNo:[0-9]+}', 'OrderController@detail');
+            $api->get('/{orderNo}', 'OrderController@detail')->where(['orderNo' => '[0-9]+']);
 
             //@Pstore-创建订单--创建订单
             //@A[I-express_id-快递ID,I-address_id-地址ID,S-coupon_code-优惠券码]
             //@A[A-product_sku_ids-商品ID,S-remark-备注]
-            //@R[created]
+            //@R[order]
             //@M[config:user]
             $api->post('/', 'OrderController@store');
 
@@ -234,14 +246,14 @@ $api->version('v1', function ($api) {
 
             //@Gindex-商品列表--商品描述
             //@A[?I-page-页码]
-            //@R[id-商品ID,type-类型,category_id-分类ID,title-商品名称,long_title-商品长标题]
+            //@R[id-商品ID,type-类型,catalog_id-分类ID,title-商品名称,long_title-商品长标题]
             //@R[description-商品详情,image-商品图片,on_sale-是否在销售,rating-评分,sold_count-销售数量]
             //@R[review_count-评论数,price-商品价格,created_at-创建时间,updated_at-更新时间]
             $api->get('/', 'ProductController@index');
 
             //@Gdetail-商品详情-{I|product_id|商品ID}-商品详情
             //@A[?I-openid-openid]
-            //@R[id-商品ID,type-类型,category_id-分类ID,title-商品名称,long_title-商品长标题]
+            //@R[id-商品ID,type-类型,catalog_id-分类ID,title-商品名称,long_title-商品长标题]
             //@R[description-商品详情,image-商品图片,on_sale-是否在销售,rating-评分,sold_count-销售数量]
             //@R[review_count-评论数,price-商品价格,created_at-创建时间,updated_at-更新时间]
             $api->get('/{productId}', 'ProductController@get')->where(['productId' => '[0-9]+']);;
@@ -256,7 +268,7 @@ $api->version('v1', function ($api) {
 
 
             //@GfavoriteIndex-商品收藏列表-favorite-商品收藏列表
-            //@R[id-商品ID,type-类型,category_id-分类ID,title-商品名称,long_title-商品长标题]
+            //@R[id-商品ID,type-类型,catalog_id-分类ID,title-商品名称,long_title-商品长标题]
             //@R[description-商品详情,image-商品图片,on_sale-是否在销售,rating-评分,sold_count-销售数量]
             //@R[review_count-评论数,price-商品价格,created_at-创建时间,updated_at-更新时间]
             //@M[config:user]

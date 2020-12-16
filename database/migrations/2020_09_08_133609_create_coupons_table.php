@@ -26,7 +26,7 @@ class CreateCouponsTable extends Migration
             $table->dateTime('not_after')->nullable()->comment('在这个时间之后不可用');
             $table->tinyInteger('enabled')->comment('优惠券是否生效');
             $table->timestamps();
-//            $table->foreign('coupon_code_id')->references('id')->on('coupon_codes')->onDelete('set null');
+//            $table->foreign('coupon_id')->references('id')->on('coupon_codes')->onDelete('set null');
         });
         add_table_comment("coupons","优惠券表");
     }

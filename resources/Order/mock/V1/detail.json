@@ -14,7 +14,7 @@
         "remark": null,
         "paid_at": null,
         "pay_deadline": "2020-01-13 14:12:54",
-        "coupon_code_id": null,
+        "coupon_id": null,
         "payment_method": null,
         "payment_no": null,
         "refund_status": "pending",
@@ -31,44 +31,42 @@
         "status": null,
         "created_at": "2020-01-13T13:42:54.000000Z",
         "updated_at": "2020-01-13T13:42:54.000000Z",
-        "items": [
-            {
-                "id": 2,
-                "order_id": 2,
-                "product_id": 19,
-                "product_sku_id": 56,
-                "amount": 1,
+        "items": [{
+            "id": 2,
+            "order_id": 2,
+            "product_id": 19,
+            "product_sku_id": 56,
+            "amount": 1,
+            "price": "5116.00",
+            "rating": null,
+            "review": null,
+            "reviewed_at": null,
+            "product": {
+                "id": 19,
+                "type": "normal",
+                "category_id": 2,
+                "title": "voluptatem",
+                "long_title": "",
+                "description": "Aut provident necessitatibus dolorem.",
+                "image": "http://shop.test/temp/8.jpg",
+                "on_sale": true,
+                "rating": 3.33,
+                "sold_count": 190,
+                "review_count": 5,
                 "price": "5116.00",
-                "rating": null,
-                "review": null,
-                "reviewed_at": null,
-                "product": {
-                    "id": 19,
-                    "type": "normal",
-                    "category_id": 2,
-                    "title": "voluptatem",
-                    "long_title": "",
-                    "description": "Aut provident necessitatibus dolorem.",
-                    "image": "http://shop.test/temp/8.jpg",
-                    "on_sale": true,
-                    "rating": 3.33,
-                    "sold_count": 190,
-                    "review_count": 5,
-                    "price": "5116.00",
-                    "created_at": "2019-10-18 17:15:34",
-                    "updated_at": "2019-12-10 11:42:40"
-                },
-                "product_sku": {
-                    "id": 56,
-                    "title": "eligendi",
-                    "description": "Est sit eius deleniti non.",
-                    "price": "5116.00",
-                    "stock": 20518,
-                    "product_id": 19,
-                    "created_at": "2019-10-18 17:15:34",
-                    "updated_at": "2020-01-13 13:42:54"
-                }
+                "created_at": "2019-10-18 17:15:34",
+                "updated_at": "2019-12-10 11:42:40"
+            },
+            "product_sku": {
+                "id": 56,
+                "title": "eligendi",
+                "description": "Est sit eius deleniti non.",
+                "price": "5116.00",
+                "stock": 20518,
+                "product_id": 19,
+                "created_at": "2019-10-18 17:15:34",
+                "updated_at": "2020-01-13 13:42:54"
             }
-        ]
+        }]
     }
 }

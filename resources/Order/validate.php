@@ -3,8 +3,8 @@
 return [
 
     "index" => [
-        "order_no.required"             => "140001",
-        "order_no.string"               => "140002",
+        "order_status.required"             => "140011",
+        "order_status.string"               => "140012",
     ],
 
     "store" => [

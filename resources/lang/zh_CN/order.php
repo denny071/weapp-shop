@@ -15,7 +15,7 @@ return [
         'is_paid' => '是否支付',
         'paid_at' => '支付时间',
         'pay_deadline' => '支付截止时间',
-        'coupon_code_id' => '优惠券ID',
+        'coupon_id' => '优惠券ID',
         'payment_method' => '支付方式',
         'payment_no' => '支付单号',
         'is_reviewed' => '是否退款审核',

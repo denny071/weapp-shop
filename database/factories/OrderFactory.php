@@ -68,7 +68,7 @@ class OrderFactory extends Factory
                 ],
                 'extra'          => $refund ? ['refund_reason' => $this->faker->sentence] : [],
                 'user_id'        => $user->id,
-                'coupon_code_id' => $coupon ? $coupon->id : null,
+                'coupon_id' => $coupon ? $coupon->id : null,
             ];
 
     }

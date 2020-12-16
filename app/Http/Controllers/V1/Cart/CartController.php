@@ -86,7 +86,7 @@ class CartController extends Controller
     public function delete(int $skuId)
     {
 
-        $this->checkRequest();
+        // $this->checkRequest();
 
         $this->cartService->remove($skuId, $this->user());
 

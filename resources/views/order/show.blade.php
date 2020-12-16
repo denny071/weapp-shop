@@ -66,9 +66,8 @@
 
                     <tr>
                     <td colspan="4">
-                        <form action="{{ route('admin.orders.ship', [$order->id]) }}" method="post" class="form-inline">
-                            <!-- 别忘了 csrf token 字段 -->
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <form  class="form-inline">
+
                             <div class="form-group {{ $errors->has('express_company') ? 'has-error' : '' }}">
                                 <label for="express_company" class="control-label">物流公司</label>
                                 <select class="form-control"  id="express_company" name="express_company" style="width: 150px;">
@@ -76,22 +75,12 @@
                                         <option value="{{$expressCompany->code}}">{{$expressCompany->name}}</option>
                                     @endforeach
                                 </select>
-                                @if($errors->has('express_company'))
-                                    @foreach($errors->get('express_company') as $msg)
-                                        <span class="help-block">{{ $msg }}</span>
-                                    @endforeach
-                                @endif
                             </div>
                             <div class="form-group {{ $errors->has('express_no') ? 'has-error' : '' }}">
                                 <label for="express_no" class="control-label">物流单号</label>
                                 <input type="text" id="express_no" name="express_no" value="" class="form-control" placeholder="输入物流单号">
-                                @if($errors->has('express_no'))
-                                    @foreach($errors->get('express_no') as $msg)
-                                        <span class="help-block">{{ $msg }}</span>
-                                    @endforeach
-                                @endif
                             </div>
-                            <button type="submit" class="btn btn-success" id="ship-btn">发货</button>
+                            <a href="javascript:void(0)" class="btn btn-success" id="btn-ship">发货</a>
                         </form>
                     </td>
                 </tr>
@@ -128,6 +117,35 @@
 <script>
     $(document).ready(function() {
         $('select').select2();
+
+        $("#btn-ship").click(function() {
+            var express_company = $("#express_company").val()
+            var express_no = $("#express_no").val()
+            if(express_company == ""){
+                layer.alert("快递公司未填写");
+                return;
+            }
+            if(express_no == ""){
+                layer.alert("快递单号未填写");
+                return;
+            }
+
+            return $.ajax({
+                url: "{{ route('admin.orders.ship', [$order->id]) }}",
+                type: 'POST',
+                data: JSON.stringify({   // 将请求变成 JSON 字符串
+                    "_token":"{{ csrf_token() }}",
+                    "express_company" : express_company,
+                    "express_no" : express_no
+                }),
+                success: function(data){
+                    Dcat.success(data.data.message);
+                    setTimeout("location.reload()", 2000 )
+                },
+                contentType: 'application/json',  // 请求的数据格式为 JSON
+            });
+
+        });
         // 不同意 按钮的点击事件
         $('#btn-refund-disagree').click(function() {
             // Laravel-Admin 使用的 SweetAlert 版本与我们在前台使用的版本不一样，因此参数也不太一样

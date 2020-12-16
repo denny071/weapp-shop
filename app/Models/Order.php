@@ -83,6 +83,8 @@ class Order extends Model
         'refund_no',
         'is_closed',
         'reviewed',
+        'express_company',
+        'express_freight',
         'ship_status',
         'ship_data',
         'ship_info',

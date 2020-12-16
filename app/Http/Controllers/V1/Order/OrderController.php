@@ -4,7 +4,7 @@ namespace App\Http\Controllers\V1\Order;
 
 use App\Http\Controllers\V1\Controller;
 use App\Models\CartItem;
-use App\Models\CouponCode;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\UserAddress;
 use App\Services\OrderService;
@@ -31,6 +31,9 @@ class OrderController extends Controller
 
         $hander  = Order::query()->with(['items.product', 'items.productSku'])->where('user_id', $userId);
         switch ($request->order_status) {
+            case 0:   // 全部
+
+                break;
             case 1:   // 待发货
                 $hander->whereNull("paid_at")->where("ship_status", Order::SHIP_STATUS_PENDING)->whereNull("status");
                 break;
@@ -66,7 +69,7 @@ class OrderController extends Controller
     {
         $order = $this->checkOrder($orderNo);
 
-        return $this->response->array(
+        return $this->response->item(
             $order->load('items.product', 'items.productSku'),
             OrderTransformer::class
         );
@@ -90,7 +93,7 @@ class OrderController extends Controller
 
         // 如果用户提交了优惠码
         if ($code = $request->coupon_code) {
-            $coupon = CouponCode::where('code', $code)->first();
+            $coupon = Coupon::where('code', $code)->first();
             if (!$coupon) {
                 $this->errorInternal("149003");
             }

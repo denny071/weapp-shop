@@ -5,15 +5,15 @@ namespace App\Services;
 use App\Exceptions\CouponCodeUnavailableException;
 use App\Exceptions\InternalException;
 use App\Jobs\RefundInstallmentOrder;
-use App\Models\CouponCode;
+use App\Models\Coupon;
 use App\Models\ExpressCompany;
-use App\Models\ExpressFreight;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Exceptions\InvalidRequestException;
 use App\Jobs\CloseOrder;
+use App\Models\ExpressCost;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 
@@ -27,12 +27,12 @@ class OrderService
      * @param UserAddress $address 用户地址
      * @param $remak string 备注
      * @param $items array 购买商品
-     * @param CouponCode|null $coupon 会员卷
+     * @param Coupon|null $coupon 会员卷
      * @param $expressId int 快递公司ID
      * @return mixed
      * @throws CouponCodeUnavailableException
      */
-    public function store(User $user, UserAddress $address, $remak, $items, CouponCode $coupon = null,$expressId)
+    public function store(User $user, UserAddress $address, $remak, $items, Coupon $coupon = null,$expressId)
     {
         // 如果传入了优惠券，则先检查是否可用
         if ($coupon) {
@@ -45,7 +45,8 @@ class OrderService
             $address->update(['last_used_at' => Carbon::now()]);
             // 创建一个订单
             $express = ExpressCompany::find($expressId);
-            $freight = ExpressFreight::where(["express_id" => $expressId,"province" => $address->province])->first();
+
+            $freight = ExpressCost::where(["express_id" => $expressId,"province" => $address->province])->first();
 
             $order = new Order([
                 'address' => [ //  将底座信息放在订单中
@@ -56,14 +57,18 @@ class OrderService
                 ],
                 'remark' => $remak,
                 'total_amount' => 0,
-                'express' => $express->name,
-                'freight' => $freight->freight,
+                'product_amount' => 0,
+                'express_company' => $express->name,
+                'express_freight' => $freight->freight,
                 'type' => Order::TYPE_NORMAL,
             ]);
+
             // 订单关联到当前账户
             $order->user()->associate($user);
+
             // 写入数据库
             $order->save();
+
             $productAmount = 0;
             // 遍历用户提交的 SKU
             foreach ($items as $data) {
@@ -88,11 +93,13 @@ class OrderService
                 // 把订单金额修改为优惠后的金额
                 $productAmount = $coupon->getAdjustedPrice($productAmount);
                 // 将订单与优惠券关联
-                $order->couponCode()->associate($coupon);
+                $order->coupon()->associate($coupon);
                 // 增加优惠券的用量，需判断返回值
+
                 if ($coupon->changeUsed() <= 0) {
                     throwErrorMessage("Order","149005");
                 }
+
             }
             $payDeadline = Carbon::now()->addSecond(config('app.order_ttl'))->toDateTimeString();
             // 更新订单总金额 和 最后付款时间

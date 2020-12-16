@@ -29,7 +29,7 @@ class CreateOrdersTable extends Migration
             $table->boolean('is_paid')->default(false)->comment("是否支付");
             $table->dateTime('paid_at')->nullable()->comment("支付时间");
             $table->dateTime('pay_deadline')->nullable()->comment("支付截止时间");
-            $table->unsignedInteger('coupon_code_id')->nullable()->comment("优惠券ID");
+            $table->unsignedInteger('coupon_id')->nullable()->comment("优惠券ID");
             $table->string('payment_method')->nullable()->comment("支付方式");
             $table->string('payment_no')->nullable()->comment("支付单号");
 

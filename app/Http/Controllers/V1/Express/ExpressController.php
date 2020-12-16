@@ -33,15 +33,11 @@ class ExpressController extends Controller
         if (!$order) {
             $this->errorInternal("149001");
         }
-
         if ($order->ship_status == Order::SHIP_STATUS_PENDING) {
             $this->errorInternal("149002");
         }
         if (!$order->ship_data) {
             $this->errorInternal("149003");
-        }
-        if (env("APP_ENV") != "product" &&  $order->ship_info != "") {
-            return $this->response->array(json_decode($order->ship_info,true));
         }
         if ($order->ship_status == Order::SHIP_STATUS_RECEIVED) {
             return $this->response->array(json_decode($order->ship_info,true));
@@ -49,6 +45,9 @@ class ExpressController extends Controller
 
         $data =  $this->getExpressFlow($order->ship_data['express_no']);
         if ($data['status'] == 0) {
+            if($data['result']['deliverystatus'] == 3){
+                $order->ship_status = Order::SHIP_STATUS_RECEIVED;
+            }
             $order->ship_info = json_encode($data,JSON_UNESCAPED_UNICODE);
             $order->save();
             return $this->response->array($data);

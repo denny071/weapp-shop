@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use Dcat\Admin\Grid;
 use Dcat\Admin\Show;
 use Dcat\Admin\Http\Controllers\AdminController;
-
+use Dcat\Admin\Http\JsonResponse;
 
 /**
  * OrderController 订单
@@ -112,15 +112,20 @@ class OrderController extends AdminController
             'express_no' => '物流单号'
         ]);
 
+        $shipData = [
+            'express_company' => $request->input("express_company"),
+            'express_no' => $request->input("express_no")
+        ];
         // 将订单发货状态改为已发货，并存入物流信息
         $order->update([
             'ship_status' => Order::SHIP_STATUS_DELIVERED,
             // 我们在 Order 模型的 $casts 属性里指明了 ship_data 是个数组
             // 因此这里可以直接把数组传过去
-            'ship_data' => $data
+            'ship_data' => $shipData
         ]);
         // 返回上一页
-        return $data;
+
+        return JsonResponse::make()->success('成功！')->send();;
     }
 
     /**

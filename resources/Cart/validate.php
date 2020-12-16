@@ -13,9 +13,6 @@ return [
         "amount.numeric" => "120002",
         "checked.in:0,1" => "120005",
     ],
-    "delete" => [
-        "sku_id.required" => "120003",
-        "sku_id.integer" => "120004",
-    ]
+
 
 ];
