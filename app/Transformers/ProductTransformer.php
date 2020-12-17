@@ -27,8 +27,8 @@ class ProductTransformer extends TransformerAbstract
             "sold_count"        => $product->sold_count,
             "review_count"      => $product->review_count,
             "price"             => $product->price,
-            "created_at"        => $product->created_at->toDateTimeString(),
-            "updated_at"        => $product->updated_at->toDateTimeString(),
+            "created_at"        => $product->created_at,
+            "updated_at"        => $product->updated_at,
         ];
     }
 

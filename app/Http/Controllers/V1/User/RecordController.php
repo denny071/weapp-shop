@@ -12,6 +12,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 class RecordController extends Controller
 {
+    protected $pageSize = 10;
+
      /**
      * 获得浏览记录
      *
@@ -28,26 +30,24 @@ class RecordController extends Controller
         $total = $handler->count();
 
         $browseRecords = $handler->orderBy("created_at","desc")
-            ->offset(($page-1)*$this->pageSize)->limit($this->pageSize)->get();
+            ->offset(($page-1) * $this->pageSize)->limit($this->pageSize)->get();
 
         $pager = new LengthAwarePaginator($browseRecords, $total, $this->pageSize, $page);
         return $this->response->paginator($pager,BrowseRecordTransformer::class);
    }
 
+
     /**
      * 删除浏览记录
      *
-     * @param Request $request
-     * @return \Dingo\Api\Http\Response
+     * @param integer $id
+     * @return void
      */
-    public function destroy()
+    public function destroy(int $id)
     {
-        $request = $this->checkRequest();
-
-        BrowseRecord::where("id",$request->id)
+        BrowseRecord::where("id",$id)
         ->where("user_id",$this->user()->id)
         ->update(["is_deleted" => true]);
-
         return $this->response->noContent();
    }
 

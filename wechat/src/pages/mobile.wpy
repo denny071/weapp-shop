@@ -1,0 +1,212 @@
+<!--绑定手机-->
+<template>
+  <form bindsubmit="formSubmit">
+    <view class="section">
+      <view class="section_title">手机号</view>
+      <input name="phone" type="number" bindinput="phoneInput" placeholder="请输入手机号码" maxlength="11" focus="true" />
+    </view>
+    <view class="section">
+      <view class="section_title">图片码</view>
+      <input class="captchaCode" name="captchaCode"  bindinput="captchaCode" type="text" placeholder="请输入验证码" />
+      <view class=" send_code">
+        <image @tap="refreshCaptchaCode"  class="captcha_code" src="{{captcha}}"></image>
+      </view>
+    </view>
+    <view class="section">
+      <view class="section_title">短信码</view>
+      <input class="smsCode" name="smsCode" type="number"  placeholder="请输入短信验证码" />
+      <view class="btn send_code">
+        <text wx:if="{{sendMsgDisabled}}">{{time+'秒后获取'}}</text>
+        <text @tap="sendCode" wx:else="{{sendMsgDisabled}}">发送短信</text>
+      </view>
+    </view>
+    <view class="btn_comfire">
+      <button class="button type_yellow" formType="submit">完成</button>
+    </view>
+  </form>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '@/api/api';
+import tip from '@/utils/tip'
+import {
+  USER_SPECICAL_INFO
+} from '@/utils/constant';
+import regeneratorRuntime from '@/utils/runtime.js'
+
+export default class Register extends wepy.page {
+  config = {
+    navigationBarTitleText: '绑定手机',
+  }
+  components = {}
+
+  data = {
+    phone : "",
+    captcha: "",
+    captchaCode: "",
+    captchaKey: "",
+    sendMsgDisabled: false,
+    verificationKey:"",
+    time: 60
+  }
+
+  async sendVerifyCode() {
+    let that = this
+
+    const json = await api.sendSMSCode({
+      method:"POST",
+      query: {
+        phone: this.phone,
+        captcha_code: this.captchaCode,
+        captcha_key: this.captchaKey,
+      }
+    });
+    if (json.statusCode == 201) {
+      that.verificationKey = json.data.key
+      tip.success("发送成功!");
+
+      that.sendMsgDisabled = true;
+      let interval = setInterval(() => {
+        if ((that.time--) <= 0) {
+          that.time = 10;
+          that.sendMsgDisabled = false;
+          clearInterval(interval);
+          that.$apply();
+        }
+        that.$apply();
+      }, 1000);
+      that.$apply();
+    } else {
+      that.getImageCode()
+      tip.error(json.data.message)
+      return false
+    }
+  }
+
+  async getImageCode(){
+
+    const json = await api.captchas();
+    if (json.statusCode == 201) {
+      this.captcha = json.data.captcha_image_content
+      this.captchaKey = json.data.captcha_key
+      this.$apply();
+    } else {
+      tip.error(json.data.message)
+    }
+  }
+
+  async bindMobile(phone,smsCode) {
+        let that = this;
+        let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+        let openid = userSpecialInfo.openid;
+        const json = await api.bindMobile({
+          method:"POST",
+          query: {
+            openid: openid,
+            phone:phone,
+            verification_key:that.verificationKey,
+            verification_code:smsCode,
+          }
+        });
+        that.showLoading = false;
+        if (json.statusCode == 201) {
+          tip.success("绑定成功")
+          that.$apply();
+          wepy.navigateTo({url: '/pages/setting'})
+        } else {
+          tip.error(json.data.message)
+          return false
+        }
+
+      }
+  onLoad() {
+    this.getImageCode()
+
+  }
+  computed = {
+
+  }
+  methods = {
+    phoneInput(e) {
+      this.phone = e.detail.value;
+    },
+
+    captchaCode(e) {
+      console.log( e.detail.value)
+      this.captchaCode = e.detail.value;
+    },
+
+    refreshCaptchaCode(){
+      this.getImageCode()
+    },
+
+    sendCode(e) {
+      if (this.phone == "") {
+        tip.alert("输入手机号码");
+        return false;
+      }
+
+      this.sendVerifyCode()
+      if (this.sendVerifyCode() == false) {
+        return false
+      }
+
+    },
+    formSubmit(e) {
+      let that = this;
+      let phone = e.detail.value.phone;
+      let smsCode = e.detail.value.smsCode;
+      if (phone == "") {
+        tip.alert("输入手机号码");
+        return false;
+      }
+      if (smsCode == "") {
+        tip.alert("输入验证码");
+        return false;
+      }
+      that.bindMobile(phone,smsCode);
+
+
+    }
+  }
+}
+
+</script>
+<style lang="less">
+.section {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1px solid #dbdbdb;
+  background: #fff;
+  .section_title {
+    color: #1a1a1a;
+    padding-right: 75rpx;
+  }
+  .btn {
+    padding: 15rpx 10rpx;
+    border: 1px solid #000000;
+    -moz-border-radius: 5rpx;
+    /* Firefox */
+    -webkit-border-radius: 5rpx;
+    /* Safari 和 Chrome */
+    border-radius: 5rpx;
+    /* Opera 10.5+, 以及使用了IE-CSS3的IE浏览器 */
+    color: #000000;
+  }
+  .captcha_code{
+    width: 150rpx;
+    height: 50rpx;
+  }
+}
+
+.btn_comfire {
+  margin-top: 64rpx;
+  padding: 0 24rpx;
+}
+
+.code {
+  width: 300rpx;
+}
+
+</style>

@@ -43,7 +43,7 @@ class AddressController extends Controller
      * @param UserAddressRequest $request
      * @return \Dingo\Api\Http\Response
      */
-    public function store()
+    public function addressStore()
     {
         $request = $this->checkRequest();
 
@@ -64,7 +64,7 @@ class AddressController extends Controller
             "address" => $request->address,
             "is_default" => $request->is_default,
             "contact_name" => $request->contact_name,
-            "contact_phone" => $request->contact_phone,
+            "contact_mobile" => $request->contact_mobile,
         ]);
 
         return $this->response->created();

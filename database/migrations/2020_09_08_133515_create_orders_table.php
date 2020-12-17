@@ -48,11 +48,15 @@ class CreateOrdersTable extends Migration
             $table->text('ship_data')->nullable()->comment("物流数据");
             $table->text('ship_info')->nullable()->comment("物流状态");
 
+
             $table->text('extra')->nullable()->comment("扩展信息");
             $table->string('status',20)->nullable()->comment("订单状态");
 
             $table->boolean('is_closed')->default(false)->comment("是否关闭");
             $table->dateTime('closed_at')->nullable()->comment("关闭时间");
+
+            $table->boolean('is_cancel')->default(false)->comment("是否取消");
+            $table->dateTime('cancel_at')->nullable()->comment("取消时间");
             $table->timestamps();
         });
         add_table_comment("orders","订单表");

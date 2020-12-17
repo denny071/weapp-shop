@@ -58,7 +58,7 @@ class UserController extends Controller
         $verifyData = \Cache::get($request->verification_key);
 
         if (!$verifyData) {
-        
+
             $this->errorInternal("109001",$verifyData);
 
         }
@@ -66,10 +66,10 @@ class UserController extends Controller
         if (!hash_equals((string)$verifyData['code'], $request->verification_code)) {
             $this->errorInternal("109002");
         }
-        $phone = $request->phone;
+        $mobile = $request->mobile;
         $user = $this->user();
-        if (User::where("phone",$phone)->where("id","<>",$user->id)->count() == 0) {
-            $user->phone = $phone;
+        if (User::where("mobile",$mobile)->where("id","<>",$user->id)->count() == 0) {
+            $user->mobile = $mobile;
             $user->save();
             return $this->response->created();
         } else {

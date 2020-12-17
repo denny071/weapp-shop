@@ -1,0 +1,450 @@
+<!--订单详情-->
+<template>
+  <scroll-view class="order_detail"   scroll-y="true" style="height:{{winHeight - 62}}px" >
+  <navigator class="item_content" url="/pages/logistics?orderNo={{orderNo}}">
+    <view class="order_state" wx:if="{{order.ship_status!='pending'}}">
+        <view class="left">
+            <image src="{{orderExpress.logo}}"></image>
+        </view>
+        <view class="center">
+            <view class="state_doc">{{orderExpress.expName}}</view>
+            <view class="state_time">{{orderExpress.updateTime}}</view>
+        </view>
+        <view class="right">
+            <view>&gt;</view>
+        </view>
+    </view>
+  </navigator>
+    <view class="order_state" wx:if="{{!order.paid_at && order.status != 'cancel'}}">
+      <view class="left">
+        <view class="unpaid">
+          <i class="iconfont icon-wait"></i>
+          <text class="unpaid_doc">等待付款</text>
+        </view>
+      </view>
+      <view class="right">
+        <text class="time_doc">剩余时间:</text>
+        <text class="time_num">{{remainingTime}}</text>
+      </view>
+    </view>
+    <view class="address_block">
+      <view class="name">
+        <text class="title"> 收货人:</text>
+        <text class="content">{{order.address.contact_name}}\t\t{{order.address.contact_phone}}</text>
+      </view>
+      <view class="address">
+        <text class="title"> 收货地址:</text>
+        <text class="content">{{order.address.address}} </text>
+      </view>
+    </view>
+    <view class="goods_block">
+      <shopItemList :goodsList.sync="list"></shopItemList>
+    </view>
+
+    <view class="order_info">
+
+      <view class="block">
+        <view class="left">订单编号</view>
+        <view class="right">{{order.no}}</view>
+      </view>
+      <view class="block"  wx:if="{{order.status == 'cancel'}}">
+        <text class="title">状态:</text>
+        <text class="right">已取消</text>
+      </view>
+      <view class="block"  wx:if="{{order.paid_at}}">
+        <text class="title">支付方式:</text>
+        <text class="right">微信支付</text>
+      </view>
+      <view class="block">
+        <text class="title">提交时间:</text>
+        <text class="right">{{order.created_at}}</text>
+      </view>
+      <view class="block" wx:if="{{order.paid_at}}">
+        <text class="title">付款时间:</text>
+        <text class="right">{{order.paid_at}}</text>
+      </view>
+      <view class="block" wx:if="{{order.ship_status=='received'}}">
+        <text class="title">完成时间:</text>
+        <text class="right">{{order.updated_at}}</text>
+      </view>
+      <view class="block">
+        <view class="left tongji">商品金额</view>
+        <view><view class="right price">{{order.product_amount}}</view></view>
+      </view>
+      <view class="block">
+        <view class="left">快递公司</view>
+        <view class="right">{{order.express|| '普通快递'}}</view>
+      </view>
+
+      <view class="block">
+        <view class="left tongji">运费</view>
+        <view><view class="right price">{{order.freight}}</view></view>
+      </view>
+    </view>
+
+
+    <view class="footer">
+      <view class="money">应付款:
+        <text class="receive_money">￥{{order.total_amount}}</text>
+      </view>
+      <view class="btn_group">
+        <view class="btn" @tap="goLogistics" wx:if="{{order.ship_status=='delivered'}}" data-id="{{order.no}}">查看物流</view>
+        <view class="btn type_pick dsh" @tap="received" wx:if="{{order.ship_status=='delivered'}}" data-id="{{order.no}}">确认收货</view>
+        <view class="btn type_pick dsh" @tap="payMoney" wx:if="{{!order.paid_at && order.status != 'cancel'}}" data-id="{{order.no}}" data-orderno="{{order.payment_no}}">立即付款</view>
+      </view>
+    </view>
+  </scroll-view>
+</template>
+<script>
+    import wepy from 'wepy';
+    import tip from '@/utils/tip'
+    import ShopItemList from '@/components/shop_item_list'
+    import api from '@/api/api'
+    import {
+        SYSTEM_INFO,
+        USER_SPECICAL_INFO
+    } from '@/utils/constant';
+    import regeneratorRuntime from '@/utils/runtime.js'
+    export default class OrderDetail extends wepy.page {
+        config = {
+            navigationBarTitleText: '订单详情',
+        }
+        data = {
+            order: {},
+            orderNo: "",
+            flag: "",
+            winHeight: 0,
+            list: [],
+            orderExpress: {},
+            remainingTime:"",
+
+        }
+
+        async getOrderInfo() {
+            let that = this;
+            let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+            let openid = userSpecialInfo.openid;
+            const json = await api.orders({
+                uri: "/" + that.orderNo,
+                query: {
+                    openid: openid,
+                }
+            });
+            if (json.statusCode == 200) {
+
+              that.order = json.data.order;
+              if (!that.order.paid_at && that.order.status != 'cancel') {
+                var nowTime = new Date().getTime();//现在时间（时间戳）
+                var endTime = new Date(that.order.pay_deadline).getTime();//结束时间（时间戳）
+                var time = (endTime-nowTime)/1000;//距离结束的毫秒数
+                that.countDown(time)
+                }
+                if (that.order.ship_status != "pending") {
+                    that.getOrderExpressInfo();
+                }
+                that.$invoke('shopItemList', 'refreshList', that.order.items);
+
+            } else {
+                tip.error(json.data.message)
+            }
+
+            that.$apply();
+        }
+        async orderReceived(){
+          let that = this;
+          let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+          let openid = userSpecialInfo.openid;
+          const json = await api.orders({
+            uri: "/" + that.order.no+"/received",
+            method: "POST",
+            query: {
+              openid: openid,
+            }
+          });
+          if (json.statusCode == 201) {
+            that.onLoad(that)
+          } else {
+            tip.error(json.data.message)
+          }
+
+          that.$apply();
+        }
+
+
+        async getOrderExpressInfo() {
+            let that = this;
+            let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+            let openid = userSpecialInfo.openid;
+            const json = await api.express({
+                uri: "/" + that.orderNo,
+                query: {
+                    openid: openid,
+                }
+            });
+            if (json.statusCode == 200 && json.data.status == "0") {
+                let express = json.data.result;
+                that.orderExpress = express;
+            } else {
+                tip.error(json.data.msg)
+            }
+
+            that.$apply();
+        }
+
+
+        components = {
+            shopItemList: ShopItemList
+        }
+
+        onLoad(options) {
+            let that = this;
+            this.orderNo = options.orderNo;
+            that.getOrderInfo();
+            let systemInfo = wepy.getStorageSync(SYSTEM_INFO);
+            that.winHeight = systemInfo.windowHeight;
+        }
+
+      // 倒计时
+      countDown(time){
+        let that = this;
+        that.remainingTime = that.dateformat(time)
+        that.$apply();
+        // 每1000ms刷新一次
+        if (time>0){
+          setTimeout(function () {
+            let newtime = time -1
+            that.countDown(newtime)
+          }, 1000);
+        }else{
+            that.couent = '已经截止'
+            return
+        }
+      }
+      dateformat(microSecond) {
+        var second = Math.floor(microSecond)
+        var hr = this.fillZeroPrefix(Math.floor(second / 3600))
+        var min = this.fillZeroPrefix(Math.floor((second - hr * 3600) / 60))
+        var sec = this.fillZeroPrefix((second - hr * 3600 - min * 60))// equal to => var sec = second % 60;
+        return hr + ':' + min + ':' + sec
+      }
+
+      fillZeroPrefix(num) {
+        return num < 10 ? '0' + num : num
+      }
+
+
+        computed = {}
+        methods = {
+
+            async received(e) {
+                await tip.confirm('是否确认收货');
+                this.orderReceived();
+            },
+            async goLogistics() {
+              wepy.navigateTo({
+                url: "/pages/logistics?orderNo="+this.orderNo
+              })
+            },
+            async payMoney(e) {
+                let tradeNo = e.currentTarget.dataset.tradeno;
+                let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+                let openId = userSpecialInfo.openid;
+
+                const pay = await api.toPay({
+                    query: {
+                        openId: openId,
+                        orderNo: tradeNo
+                    }
+                });
+                if (pay.data.code == 0) {
+                    //以下是微信支付
+                    wx.requestPayment({
+                        appId: pay.data.appId,
+                        timeStamp: pay.data.timeStamp,
+                        nonceStr: pay.data.nonceStr,
+                        package: pay.data.package,
+                        signType: 'MD5',
+                        paySign: pay.data.paySign,
+                        success: function (res) {
+                            setTimeout(() => {
+                                //支付成功 关闭loadding 跳转到支付成功页面
+                                tip.loaded();
+                                wepy.navigateTo({
+                                    url: "/pages/pay_success?orderNo=" + tradeNo
+                                })
+                            }, 2000)
+                        },
+                        fail: function (res) {
+                            tip.alert('支付失败');
+                        }
+                    })
+                } else {
+                    tip.alert('支付失败');
+                }
+            }
+        }
+
+        events = {}
+
+    }
+
+</script>
+<style lang="less">
+.order_detail {
+  position: relative;
+}
+
+.order_state {
+  padding: 35rpx 24rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10rpx;
+  background: #fff;
+  .iconfont {
+    font-size: 40rpx;
+    color: #6a6a6a;
+  }
+    image {
+        width: 130rpx;
+        height: 130rpx;
+    }
+  .state_time {
+    width: 200rpx;
+    padding-top: 24rpx;
+  }
+  .center {
+    flex: 1;
+    margin-left: 50rpx;
+  }
+  .right {
+    display: flex;
+    align-items: center;
+  }
+  .unpaid {
+    margin-left: 50rpx;
+    .unpaid_doc {
+      margin-left: 10rpx;
+    }
+  }
+  .time_doc {
+    font-size: 26rpx;
+    color: #999;
+  }
+  .time_num {
+    font-size: 26rpx;
+    margin-right: 50rpx;
+  }
+}
+
+.address_block {
+  padding: 30rpx;
+  background: #fff;
+  margin-top: 10rpx;
+  .address {
+    padding-top: 20rpx;
+  }
+  .title {
+    color: #858585;
+  }
+  .content {
+    color: #000;
+    padding-left: 24rpx;
+  }
+}
+
+.goods_block {
+  margin-top: 10rpx;
+  background: #fff;
+}
+
+.info_block {
+  margin-top: 10rpx;
+  padding: 18rpx;
+  background: #fff;
+  .item {
+    padding-top: 40rpx;
+    .title {
+      font-size: 28rpx;
+    }
+    .content {
+      color: #808080;
+      font-size: 28rpx;
+    }
+  }
+}
+
+.order_info {
+  .block {
+    display: flex;
+    justify-content: space-between;
+    height: 91rpx;
+    align-items: center;
+    padding: 0rpx 35rpx;
+    border-bottom: 1px solid #efefef;
+    background: #fff;
+    .txt {
+      font-size: 32rpx;
+    }
+    .left {
+      color: #000;
+    }
+    .right {
+      color: #9a9a9a;
+      text-align: right;
+    }
+    .price {
+      color: #ea4a3a;
+      font-size: 32rpx;
+    }
+    .tongji {
+      font-size: 32rpx;
+    }
+    .input_box {
+      flex: 1;
+      margin-left: 20rpx;
+    }
+    .total_jf{
+      font-size: 32rpx;
+    }
+  }
+}
+
+.footer {
+  position: fixed;
+  bottom: 0rpx;
+  height: 92rpx;
+  background: #fff;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18rpx;
+  border-top: 1px solid #e6e6e6;
+  .btn_group {
+    display: flex;
+    margin-right: 30rpx;
+    .btn {
+      padding: 20rpx 20rpx;
+      border: 1px solid #cccccc;
+      text-align: center;
+      margin: 0 auto;
+      width: 180rpx;
+      -moz-border-radius: 10rpx;
+      /* Firefox */
+      -webkit-border-radius: 10rpx;
+      /* Safari 和 Chrome */
+      border-radius: 10rpx;
+    }
+    .dsh {
+      margin-left: 20rpx;
+    }
+  }
+  .receive_money {
+    font-weight: 600;
+    font-size: 34rpx;
+    color: #ff4856;
+  }
+}
+
+</style>

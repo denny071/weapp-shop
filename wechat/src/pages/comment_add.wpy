@@ -1,0 +1,168 @@
+<!--商品评论-->
+<template>
+  <view class="block">
+    <view class="good_list" >
+      <view class="image_box">
+        <image src="{{item.product.image}}"></image>
+      </view>
+      <view class="goods" >
+        <view class="product_name">{{item.product.title}}</view>
+        <view class="product_rule">数量：{{item.amount}} {{item.product_sku.title}}</view>
+        <view class="product_info">
+          <view class="price">￥{{item.product_sku.price}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="item-block">
+      <view class="title">评分:</view>
+      <view class="content">
+        <rate @change.user="callbackStart"></rate>
+      </view>
+    </view>
+    <view class="item-block">
+      <view class="title">内容:</view>
+      <view class="content">
+        <textarea @input="bindText" class="textarea" placeholder="请输入评论内容" />
+      </view>
+    </view>
+    <view class="button type_green" @tap="submitForm">发表评论</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import Rate from "../components/rate"
+import tip from '@/utils/tip'
+import api from '@/api/api';
+import {
+  USER_SPECICAL_INFO
+} from '@/utils/constant';
+import regeneratorRuntime from '@/utils/runtime.js'
+
+export default class goodsComment extends wepy.page {
+  config = {
+    navigationBarTitleText: '商品评论',
+  }
+  data = {
+    start:0,
+    item:{},
+    content:""
+  }
+  components = {
+    rate: Rate
+  }
+
+  onLoad(opt) {
+    this.item = JSON.parse(opt.item)
+  }
+
+  async saveReview(){
+    if (!this.start) {
+      tip.error("必须评分");
+      return false
+    }
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    const json = await api.review({
+      method:"POST",
+      query:{
+        sku_id:this.item.id,
+        openid: openid,
+        content: this.content,
+        start: this.start
+      }
+    });
+    if (json.statusCode == 201) {
+      tip.success("评价成功")
+    } else {
+      tip.error(json.data.message);
+    }
+  }
+
+  methods = {
+    bindText(e) {
+      this.content = e.detail.value;
+    },
+    callbackStart(count){
+      this.start = count;
+    },
+    submitForm(){
+      this.saveReview()
+    }
+  }
+  events = {}
+}
+
+</script>
+<style lang="less">
+.block {
+  .good_list {
+    display: flex;
+    justify-content:space-between;
+    padding: 20rpx 0rpx;
+    border-bottom: 1px solid #efefef;
+    .goods{
+      width: 300rpx;
+    }
+  }
+
+  .image_box {
+    image {
+      width: 180rpx;
+      height: 180rpx;
+    }
+  }
+
+
+
+  .product_name {
+    color: #414141;
+    font-size: 32rpx;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+  }
+
+  .product_rule {
+    font-size: 26rpx;
+    color: #757575;
+    padding-top: 16rpx;
+  }
+
+  .product_info {
+    padding-top: 20rpx;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .price {
+    color: #de0000;
+    font-size: 34rpx;
+    font-weight: 600;
+  }
+
+
+
+
+  background: #fff;
+  padding: 20rpx;
+  .item-block {
+    display: flex;
+    margin-top: 20rpx;
+  }
+  .title {
+    padding-right: 10rpx;
+  }
+  .textarea {
+    height: 200rpx;
+    border-radius: 10rpx;
+    border: 1rpx solid #efefef;
+    padding: 10rpx;
+  }
+  .type_green{
+    margin-top: 100rpx;
+  }
+}
+
+</style>

@@ -1,0 +1,423 @@
+<!--确认订单-->
+<template>
+  <view class="comfire_order">
+    <view class="address" @tap="setAddress">
+      <view class="empty_address" wx:if="{{!is_exit_address}}">
+        <view class="title">设置收货地址</view>
+        <view class="arrow">&gt;</view>
+      </view>
+      <view class="address_info" wx:else>
+        <view class="title">
+          <view class="user_info">
+            <text class="name">{{address.contact_name}}</text>
+            <text class="phone">{{address.contact_phone}}</text>
+          </view>
+          <view class="active_address">
+            <text class="defult" wx:if="{{address.is_default==1}}"> [默认]</text>
+            {{address.address}}
+          </view>
+        </view>
+        <view class="arrow">&gt;</view>
+      </view>
+    </view>
+    <view class="spacing"></view>
+
+
+    <view class="goodsList">
+        <!--列表显示2个，绑定数据记得去掉，这里做调试-->
+        <repeat for="{{product_list}}" key="index" index="index" item="product">
+        <view class="list_box">
+
+              <view class="goods-info">
+                <view class="img-box">
+                  <image src="{{product.image}}" class="img" />
+                </view>
+                <view class="text-box">
+                  <view class="goods-title">{{product.product_name}}</view>
+                  <view class="goods-label">{{product.product_sku_name}}</view>
+                  <view class="goods-price">¥ {{product.price}}</view>
+                  <view class="buy-num">
+                   X {{product.amount}}
+                  </view>
+                </view>
+              </view>
+        </view>
+        </repeat>
+    </view>
+
+    <view class="order_info">
+      <view class="block">
+        <view class="left">买家留言:</view>
+        <view class="right input_box">
+          <input bindinput="bindKeyInput" value="" placeholder="留言"/>
+        </view>
+      </view>
+
+      <view class="block">
+        <view class="left">配送方式</view>
+        <view class="right">顺丰快递</view>
+      </view>
+
+      <view class="block">
+        <view class="left tongji">商品金额</view>
+        <view><view class="right price">￥{{product_price}}</view></view>
+      </view>
+      <view class="block">
+        <view class="left tongji">运费</view>
+        <view><view class="right price">￥{{express_freight}}</view></view>
+      </view>
+
+      <view class="spacing"></view>
+      <view class="block">
+        <view class="left tongji">订单金额</view>
+        <view><view class="right price">￥{{total_price}}</view></view>
+      </view>
+    </view>
+
+    <view class="pay_box">
+      <form report-submit bindsubmit="goPay" >
+        <button form-type="submit" class="button type_green">微信支付</button>
+      </form>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import api from '@/api/api';
+import tip from '@/utils/tip';
+import helper from '@/utils/helper';
+import {
+  PRODUCT_SKU_IDS,
+  USER_SPECICAL_INFO,
+  ADDRESS_ID
+} from '@/utils/constant';
+import regeneratorRuntime from '@/utils/runtime.js'
+
+
+export default class ComfireOrder extends wepy.page {
+  config = {
+    navigationBarTitleText: '确认订单',
+  }
+  data = {
+      product_list: [],
+    productSkuIds: "",
+    //卖家留言
+    sellerMessage: "",
+    //是否存在默认地址
+    is_exit_address: false,
+    address: {},
+    //总价
+
+    product_price:0,
+    total_price:0,
+    express_freight:0
+
+  }
+
+  //获取订单详情
+  async getOrderDetailInfo() {
+    let that = this;
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    let addressId = wepy.getStorageSync(ADDRESS_ID)|| 0
+    const json = await api.settlement({
+      query: {
+        openid: openid,
+        productSkuIds: that.productSkuIds,
+        addressId:addressId
+      }
+    });
+    if (json.statusCode == 200) {
+      let data = json.data;
+      that.product_list = data.product_list;
+      that.product_price = data.product_price;
+      that.express_freight = data.express_freight;
+      that.total_price = data.total_price;
+      that.address = data.default_address;
+      if (that.address) {
+        that.is_exit_address = true;
+      }
+    } else {
+      tip.error(json.data.msg)
+    }
+    that.$apply();
+  }
+  async getAddressInfo(id) {
+    let that = this;
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    const json = await api.userAddress({
+      uri: "/"+id,
+      query: {
+        openid: openid
+      }
+    });
+    if (json.statusCode == 200) {
+      that.is_exit_address = true;
+      that.address=json.data;
+      that.$apply();
+    } else {
+      tip.error(json.data.msg)
+    }
+
+  }
+  onLoad(option) {
+    this.productSkuIds = option.productSkuIds==undefined?"":option.productSkuIds;
+    let from = option.from==undefined?"":option.from;
+    if (from=="selAdd") {
+      this.productSkuIds =  wepy.getStorageSync(PRODUCT_SKU_IDS)
+      this.getAddressInfo(wepy.getStorageSync(ADDRESS_ID))
+    }
+    this.getOrderDetailInfo();
+  }
+  computed = {
+
+  }
+  async goToPay(formId) {
+    let that = this;
+    //测试调用接口用，可注释
+    tip.loading("提交订单中");
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    const json = await api.orders({
+      method:'POST',
+      query: {
+        openid: openid,
+        address_id: that.address.id,
+        productSkuIds: that.productSkuIds,
+        remake: that.sellerMessage
+      }
+    });
+
+    if (json.statusCode == 200) {
+      helper.payOrder(openid,json.data.no,json.data.total_amount);
+    } else {
+      tip.error(json.data.msg)
+    }
+  }
+
+
+
+
+
+
+  methods = {
+    handleDelItem(itemData) {
+      this.deleteGoods(itemData);
+    },
+    bindKeyInput(e) {
+
+      this.sellerMessage = e.detail.value;
+
+    },
+    async goPay(e) {
+      var fId = e.detail.formId;
+      if (!this.is_exit_address) {
+        await tip.confirm('你未设置收货地址，请设置地址');
+        wepy.navigateTo({
+          url: "/pages/address?type=order"
+        })
+        return false;
+      }
+      this.goToPay(fId);
+    },
+    setAddress() {
+
+      wepy.setStorageSync(PRODUCT_SKU_IDS,this.productSkuIds);
+      wepy.navigateTo({
+        url: "/pages/address?type=order"
+      })
+    }
+
+  }
+  events = {
+
+  }
+}
+
+</script>
+<style lang="less">
+.address {
+  border-top: 1px solid #efefef;
+  background: #fff;
+  .empty_address,
+  .address_info {
+    display: flex;
+    justify-content: space-between;
+    height: 103rpx;
+    align-items: center;
+    padding: 0rpx 35rpx;
+    .title {
+      color: #000;
+    }
+    .arrow {
+      color: #9a9a9a;
+    }
+    .user_info {
+      color: #1a1a1a;
+    }
+    .active_address {
+      margin-top: 20rpx;
+    }
+    .defult {
+      color: #ea4a3a;
+    }
+  }
+  .address_info {
+    height: 150rpx;
+  }
+}
+
+.order_info {
+  .block {
+    display: flex;
+    justify-content: space-between;
+    height: 91rpx;
+    align-items: center;
+    padding: 0rpx 35rpx;
+    border-bottom: 1px solid #efefef;
+    background: #fff;
+    .txt {
+      font-size: 32rpx;
+    }
+    .left {
+      color: #000;
+    }
+    .right {
+      color: #9a9a9a;
+      text-align: right;
+    }
+    .price {
+      color: #ea4a3a;
+      font-size: 32rpx;
+    }
+    .tongji {
+      font-size: 32rpx;
+    }
+    .input_box {
+      flex: 1;
+      margin-left: 20rpx;
+    }
+    .total_jf{
+      font-size: 32rpx;
+    }
+  }
+}
+.list_box {
+  height: 250rpx;
+}
+
+.goods-info {
+  border-bottom: 1px solid #eee;
+  display: flex;
+  padding: 20rpx;
+  box-sizing: border-box;
+  position: relative;
+  background: #fff;
+}
+
+.goods-info .img-box {
+  width: 160rpx;
+  height: 160rpx;
+  overflow: hidden;
+  margin-right: 28rpx;
+  background-color: #d8d8d8;
+}
+
+.goods-info .text-box {
+  width: 480rpx;
+}
+
+.goods-info .text-box .goods-title {
+  font-size: 32rpx;
+  color: #414141;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 10rpx 20rpx 5rpx 0;
+}
+
+.goods-info .text-box .goods-label {
+  font-size: 26rpx;
+  color: #999;
+  height: 38rpx;
+  line-height: 38rpx;
+  margin: 8rpx 0 25rpx 0;
+}
+
+.goods-info .text-box .goods-price {
+  font-size: 34rpx;
+  color: #e64340;
+}
+
+.goods-info .text-box .buy-num {
+  width: 164rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  position: absolute;
+  right: 30rpx;
+  top: 35rpx;
+  display: flex;
+  font-size: 34rpx;
+  text-align: center
+}
+
+.goods-info .text-box .buy-num .jian-btn {
+  width: 48rpx;
+  height: 100%;
+  border-left: 1rpx solid #ccc;
+  border-bottom: 1rpx solid #ccc;
+  border-top: 1rpx solid #ccc;
+  border-bottom-left-radius: 6rpx;
+  border-top-left-radius: 6rpx;
+}
+
+.goods-info .text-box .buy-num .jian-btn.disabled {
+  background-color: #f5f5f9;
+  border-left: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eee;
+  border-top: 1rpx solid #eee;
+  color: #ccc;
+}
+
+.goods-info .text-box .buy-num .jia-btn {
+  width: 48rpx;
+  height: 100%;
+  border-right: 1rpx solid #ccc;
+  border-bottom: 1rpx solid #ccc;
+  border-top: 1rpx solid #ccc;
+  border-bottom-right-radius: 6rpx;
+  border-top-right-radius: 6rpx;
+}
+
+.goods-info .text-box .buy-num .jia-btn.disabled {
+  background-color: #f5f5f9;
+  border-right: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eee;
+  border-top: 1rpx solid #eee;
+  color: #ccc;
+}
+
+.goods-info .text-box .buy-num input {
+  width: 68rpx;
+  height: 48rpx;
+  min-height: 48rpx;
+  text-align: center;
+  font-size: 24rpx;
+  border: 1rpx solid #ccc;
+}
+
+.goods-info .img-box .img {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+.pay_box {
+  margin-top: 104rpx;
+  padding: 0 22rpx;
+}
+.dk-jf {
+  text-align: right;
+  color: #666;
+}
+</style>

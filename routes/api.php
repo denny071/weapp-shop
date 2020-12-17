@@ -121,7 +121,7 @@ $api->version('v1', function ($api) {
             $api->post('avatar', 'ImageController@avatar');
 
             //@PmessageCode-短信验证码-messageCode-短信验证码
-            //@A[S-captcha_key-图片验证码key,S-captcha_code-图片验证码,S-phone-手机号]
+            //@A[S-captcha_key-图片验证码key,S-captcha_code-图片验证码,S-mobile-手机号]
             //@R[key-关键字,expired_at-过期时间]
             $api->post('messageCode', 'MessageCodeController@messageCode');
 
@@ -181,18 +181,18 @@ $api->version('v1', function ($api) {
             //@Dcancel-取消订单-{S|order_no|订单编号}-取消订单
             //@R[noContent]
             //@M[config:user]
-            $api->delete('/{orderNo:[0-9]+}', 'OrderController@cancel')->where(['orderNo' => '[0-9]+']);
+            $api->delete('/{orderNo}', 'OrderController@cancel')->where(['orderNo' => '[0-9]+']);
 
-            //@GapplyRefund-申请退款-{S|order_no|订单编号}-申请退款
+            //@PapplyRefund-申请退款-applyRefund/{S|order_no|订单编号}-申请退款
             //@A[S-reason-退款原因]
             //@R[created]
             //@M[config:user]
-            $api->get('/applyRefund/{orderNo:[0-9]+}', 'OrderController@applyRefund')->where(['orderNo' => '[0-9]+']);
+            $api->post('/applyRefund/{orderNo}', 'OrderController@applyRefund')->where(['orderNo' => '[0-9]+']);
 
-            //@Greceived-确认收货-{S|order_no|订单编号}-确认收货
+            //@Preceived-确认收货-received/{S|order_no|订单编号}-确认收货
             //@R[created]
             //@M[config:user]
-            $api->get('/received/{orderNo:[0-9]+}', 'OrderController@received')->where(['orderNo' => '[0-9]+']);
+            $api->post('/received/{orderNo}', 'OrderController@received')->where(['orderNo' => '[0-9]+']);
 
             //@Psettlement-订单结算-settlement-订单结算
             //@A[I-express_id-快递ID,I-address_id-地址ID,A-product_sku_ids-商品ID]
@@ -208,19 +208,19 @@ $api->version('v1', function ($api) {
             //@R[full_address-默认地址(default_address)@完整地址]
             //@R[express_freight-运输重量,product_price-商品价格,total_price-总价格]
             //@M[config:user]
-            $api->post('settlement', 'SettlementController@store');
+            $api->post('/settlement', 'SettlementController@store');
 
             //@Pcrowdfunding-订单结算-crowdfunding-订单结算
             //@A[I-express_id-快递ID,I-address_id-地址ID,I-sku_id-商品ID,I-amount-数量]
             //@R[created]
             //@M[config:user]
-            $api->get('crowdfunding', 'CrowdfundingController@store');
+            $api->get('/crowdfunding', 'CrowdfundingController@store');
 
             //@Pseckill-订单结算-seckill-订单结算
             //@A[I-express_id-快递ID,I-address_id-地址ID,I-sku_id-商品ID]
             //@R[created]
             //@M[config:user]
-            $api->get('seckill', 'SeckillController@store');
+            $api->get('/seckill', 'SeckillController@store');
 
 
         });
@@ -341,43 +341,43 @@ $api->version('v1', function ($api) {
 
             //@Gone-查看当前用户信息--查看当前用户信息
             //@R[id-用户ID,name-名称,avatar-头像,introduction-简介]
-            //@R[phone-电话,created_at-创建时间,updated_at-更新时间]
+            //@R[mobile-电话,created_at-创建时间,updated_at-更新时间]
             //@M[config:user]
-            $api->get('/', 'UserController@index');
+            $api->get('/', 'UserController@get');
 
             //@Uupdate-更新用户信息--更新用户信息
             //@A[S-name-用户名称,S-email-邮箱,S-introduction-简介,F-avatar_image_id-头像图片ID]
             //@R[id-用户ID,name-名称,avatar-头像,introduction-简介]
-            //@R[phone-电话,created_at-创建时间,updated_at-更新时间]
+            //@R[mobile-电话,created_at-创建时间,updated_at-更新时间]
             //@M[config:user]
             $api->put('/', 'UserController@update');
 
 
-            //@GbindMobile-绑定手机-bindMobile-绑定手机
-            //@A[S-verification_key-验证key,S-verification_code-验证码,S-phone-电话]
+            //@PbindMobile-绑定手机-bindMobile-绑定手机
+            //@A[S-verification_key-验证key,S-verification_code-验证码,S-mobile-电话]
             //@R[created]
             //@M[config:user]
-            $api->get('/bindMobile', 'UserController@bindMobile');
+            $api->post('/bindMobile', 'UserController@bindMobile');
 
             //@GrecordAddress-获得浏览记录-record-获得浏览记录
             //@A[?I-page-页码]
             //@R[id-记录ID,type-类型,times-次数,created_at-创建时间]
             //@R[product_id-数据(data)@商品ID,title-数据(data)@商品标题]
             //@R[image-数据(data)@商品图片,price-数据(data)@商品价格]
+            //@M[config:user]
             $api->get('record', 'RecordController@get');
 
 
-            //@DrecordDestroy-删除浏览记录-record-删除浏览记录
-            //@A[I-id-记录ID]
+            //@DrecordDestroy-删除浏览记录-record/{I|id|记录ID}-删除浏览记录
             //@R[noContent]
             //@M[config:user]
-            $api->delete('record', 'RecordController@destroy');
+            $api->delete('record/{id}', 'RecordController@destroy')->where(['id' => '[0-9]+']);
 
 
             //@GaddressIndex-用户地址列表-address-用户地址列表
             //@R[id-地址ID,province-省名称,province_code-省代码,city-城市,city_code-城市代码]
             //@R[district-区名称,district_code-区代码,address-详细地址,is_default-是否默认]
-            //@R[contact_name-联系人,contact_phone-联系电话,last_used_at-最后使用时间]
+            //@R[contact_name-联系人,contact_mobile-联系电话,last_used_at-最后使用时间]
             //@R[created_at-创建时间,updated_at-更新时间]
             //@M[config:user]
             $api->get('/address', 'AddressController@index');
@@ -385,28 +385,28 @@ $api->version('v1', function ($api) {
             //@GaddressOne-获得用户地址-address/{I|user_address_id|用户地址ID}-获得用户地址
             //@R[id-地址ID,province-省名称,province_code-省代码,city-城市,city_code-城市代码]
             //@R[district-区名称,district_code-区代码,address-详细地址,is_default-是否默认]
-            //@R[contact_name-联系人,contact_phone-联系电话,last_used_at-最后使用时间]
+            //@R[contact_name-联系人,contact_mobile-联系电话,last_used_at-最后使用时间]
             //@R[created_at-创建时间,updated_at-更新时间]
             //@M[config:user]
-            $api->get('/address/{userAddressId:[0-9]+}', 'AddressController@get')->where(['userAddressId' => '[0-9]+']);
+            $api->get('/address/{userAddressId}', 'AddressController@get')->where(['userAddressId' => '[0-9]+']);
 
 
-            //@PGaddressStore-添加用户地址-address-添加用户地址
+            //@PaddressStore-添加用户地址-address-添加用户地址
             //@A[S-province-省名称,S-province_code-省代码,S-city-城市,S-city_code-城市代码]
             //@A[S-district-区名称,S-district_code-区代码,S-address-详细地址]
-            //@R[I-is_default-是否默认,S-contact_name-联系人,S-contact_phone-联系电话]
+            //@R[I-is_default-是否默认,S-contact_name-联系人,S-contact_mobile-联系电话]
             //@M[config:user]
             //@R[created]
-            $api->post('/address', 'AddressController@store');
+            $api->post('/address', 'AddressController@addressStore');
 
 
-            //@UaddressUpdate-添加用户地址-address/{I|user_address_id|用户地址ID}-添加用户地址
+            //@UaddressUpdate-更新用户地址-address/{I|user_address_id|用户地址ID}-更新用户地址
             //@A[S-province-省名称,S-province_code-省代码,S-city-城市,S-city_code-城市代码]
             //@A[S-district-区名称,S-district_code-区代码,S-address-详细地址]
-            //@R[I-is_default-是否默认,S-contact_name-联系人,S-contact_phone-联系电话]
+            //@R[I-is_default-是否默认,S-contact_name-联系人,S-contact_mobile-联系电话]
             //@R[id-地址ID,province-省名称,province_code-省代码,city-城市,city_code-城市代码]
             //@R[district-区名称,district_code-区代码,address-详细地址,is_default-是否默认]
-            //@R[contact_name-联系人,contact_phone-联系电话,last_used_at-最后使用时间]
+            //@R[contact_name-联系人,contact_mobile-联系电话,last_used_at-最后使用时间]
             //@R[created_at-创建时间,updated_at-更新时间]
             //@M[config:user]
             $api->put('address/{userAddressId}', 'AddressController@update')->where(['userAddressId' => '[0-9]+']);
@@ -418,6 +418,9 @@ $api->version('v1', function ($api) {
             $api->delete('address/{userAddressId}', 'AddressController@destroy');
 
         });
+
+
+
 
 
     });

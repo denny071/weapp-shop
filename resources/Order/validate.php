@@ -20,4 +20,9 @@ return [
         "remark.string"                 => "140010",
     ],
 
+    "applyRefund" => [
+        "reason.required"             => "140013",
+        "reason.string"               => "140014",
+    ],
+
 ];

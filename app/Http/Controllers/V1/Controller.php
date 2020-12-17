@@ -28,6 +28,7 @@ class Controller extends BaseController
     {
         $debug = debug_backtrace();
         $class = explode("\\", $debug[1]['class']);
+
         $request = Apidoc::checkRequest($class[count($class)-2], $debug[1]['function'], function($code,$message){
             throw new InvalidRequestException($code."|".$message);
         });

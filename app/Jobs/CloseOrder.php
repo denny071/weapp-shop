@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Redis;
 
 /**
@@ -44,7 +45,7 @@ class CloseOrder extends Job
         // 通过事务执行 sql
         \DB::transaction(function () {
             // 将订单的 closed 字段标记为 true，即关闭订单
-            $this->order->update(['is_closed' => true]);
+            $this->order->update(['is_closed' => true,"closed_at" => Carbon::now()->format("Y-m-d H:i:s")]);
             // 循环遍历订单中的上坡 SKU, 将订单中的数量加回到 SKU 的库存中去
             foreach ($this->order->items as $item) {
                 $item->productSku->addStock($item->amount);

@@ -1,0 +1,117 @@
+<!--商品评论列表-->
+<template>
+  <view class="block">
+    <view class="block_title">全部评价({{reviewCount}})</view>
+    <view class="block_content">
+      <scroll-view scroll-y="true" class="block_content" style="height:{{winHeight}}px" bindscrolltolower="onReachBottom">
+      <commentList :list.sync="reviewList"></commentList>
+      </scroll-view>
+    </view>
+  </view>
+</template>
+<!--加载更多时动画-->
+<bottomLoadMore :show.sync="showLoading" message="正在加载"></bottomLoadMore>
+<script>
+import wepy from 'wepy';
+import CommentList from "../components/comment_list"
+import tip from '@/utils/tip';
+import api from '@/api/api';
+import BottomLoadMore from "../components/common/bottomLoadMore"
+import {
+  SYSTEM_INFO,
+  USER_SPECICAL_INFO
+} from '@/utils/constant';
+import regeneratorRuntime from '@/utils/runtime.js'
+
+export default class goodsComment extends wepy.page {
+  config = {
+    navigationBarTitleText: '商品评论',
+  }
+  components = {
+    commentList: CommentList,
+    bottomLoadMore: BottomLoadMore
+  }
+  data = {
+    goodsId:0,
+    reviewList: [],
+    reviewCount:0,
+    showLoading: true,
+    winHeight:0,
+    currentPage: 1,
+    page_total: 0,
+    preventRepeatReuqest:false
+  }
+
+  async getComments(currentPage, size){
+      let that = this
+      let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+      let openid = userSpecialInfo.openid;
+      const json = await api.review({
+        uri:"/product/"+this.goodsId,
+        query:{
+          openid: openid,
+          page: currentPage || 1,
+          size: size || 10
+        }
+      });
+      if (json.statusCode == 200) {
+        that.reviewList = [...that.reviewList,...json.data.data]
+        that.reviewCount = json.data.meta.pagination.total
+        that.page_total = json.data.meta.pagination.total_pages
+        that.$invoke('commentList', 'refreshList', that.reviewList);
+      } else {
+        tip.error(json.data.message);
+      }
+    that.showLoading = false;
+    that.$apply();
+  }
+
+  onLoad(opt) {
+    this.goodsId = opt.goodsId
+    this.getComments()
+    //设置滚动高度
+    let systemInfo = wepy.getStorageSync(SYSTEM_INFO);
+    this.winHeight = systemInfo.windowHeight;
+    this.$apply();
+  }
+
+  //加载更多
+  onReachBottom() {
+    let that = this;
+    that.showLoading = true;
+    //判断总页数是否大于翻页数
+    if ((that.page_total) > that.currentPage) {
+      //防止重复加载
+      if (that.preventRepeatReuqest) {
+        return true;
+      }
+      that.preventRepeatReuqest = true;
+      that.currentPage++;
+      that.getComments(that.currentPage);
+      that.preventRepeatReuqest = false;
+    } else {
+      that.showLoading = false;
+    }
+  };
+  computed = {}
+  methods = {}
+  events = {}
+}
+
+</script>
+<style lang="less">
+.block {
+  padding: 27rpx 10rpx;
+  background: #fff;
+  .block_title {
+    color: #000;
+    height: 30rpx;
+    line-height: 30rpx;
+    border-left: 6px solid #f73c3c;
+    padding-left: 20rpx;
+  }
+  .block_content {
+    padding: 8rpx 22rpx;
+  }
+}
+</style>

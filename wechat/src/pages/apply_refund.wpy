@@ -1,0 +1,269 @@
+<!--商品评论-->
+<template>
+  <view class="block">
+    <view class="order_item">
+      <view class="list" >
+      <view class="item_content" >
+        <view class="order_list_top">
+          <view class="left">
+            <view class="title">订单号：
+              <text class="order_doc">{{order.no}}</text>
+            </view>
+            <view class="title mt10">提交时间：
+              <text class="order_doc">{{order.created_at}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="order_list_center">
+          <shopItemList :list.sync="goodsList" :order.sync="order"></shopItemList>
+        </view>
+      </view>
+      </view>
+    </view>
+
+    <view wx:if="{{order.extra}}">
+      <view class="list_item">
+        <view class="title">申请原因：{{order.extra.refund_reason}}</view>
+      </view>
+      <view class="list_item">
+        <view class="title">拒绝原因：{{order.extra.refund_disagree_reason}}</view>
+      </view>
+    </view>
+
+    <picker  bindchange="bindPickerChange" value="{{index}}" range="{{options}}">
+        <view class="list_item">
+          <view class="title"> 退款原因：</view>
+          <view class="input">{{options[selectOption]}}</view>
+      </view>
+    </picker>
+    <view class="button type_green" @tap="submitForm">提交申请</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import tip from '@/utils/tip'
+import api from '@/api/api'
+import ShopItemList from '@/components/shop_item_list'
+import {
+  USER_SPECICAL_INFO
+} from '@/utils/constant';
+import regeneratorRuntime from '@/utils/runtime.js'
+export default class goodsComment extends wepy.page {
+  config = {
+    navigationBarTitleText: '申请退款',
+  }
+  data = {
+    order:{},
+    goodsList:{},
+    options:["不想买了","下错订单","其他原因"],
+    selectOption:0,
+    reason:""
+
+
+  }
+  components = {
+    shopItemList: ShopItemList
+  }
+  onLoad(opt) {
+    this.order = JSON.parse(opt.order)
+    this.goodsList =  this.order.items
+    this.reason = this.options[this.selectOption]
+  }
+
+  async saveReview(){
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    const json = await api.orders({
+      uri: "/" + this.order.no +"/apply_refund",
+      method: "POST",
+      query: {
+        openid: openid,
+        reason:this.reason,
+      }
+    });
+    if (json.statusCode == 201) {
+      tip.error(json.data.message)
+      setTimeout(function(){
+        wepy.navigateTo({
+          url: "/pages/order"
+        },2000)
+      })
+
+    } else {
+      tip.error(json.data.message)
+    }
+  }
+
+  methods = {
+    bindText(e) {
+      this.content = e.detail.value;
+    },
+    callbackStart(count){
+      this.start = count;
+    },
+    submitForm(){
+      this.saveReview()
+    },
+    bindPickerChange(e){
+      this.selectOption =  e.detail.value;
+      this.reason =  this.options[this.selectOption];
+      this.$apply()
+    }
+  }
+  events = {}
+}
+
+</script>
+<style lang="less">
+
+.block {
+
+  .list_item {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #efefef;
+    padding: 35rpx 20rpx;
+    .title {
+      margin-right: 20rpx;
+    }
+    .input {
+      border: 1px solid #eee;
+      width: 70%;
+      padding: 2px 5px;
+      input {
+        color: #333;
+      }
+    }
+  }
+  .order_item {
+    padding: 10rpx 0rpx;
+    margin-bottom: 30rpx;
+    .title {
+      font-size: 26rpx;
+      color: #333;
+    }
+    .order_doc {
+      font-size: 26rpx;
+      color: #808080;
+    }
+    .mt10 {
+      margin-top: 10rpx;
+    }
+    .order_state {
+      color: #ff4856;
+      font-size: 32rpx;
+    }
+    .order_list_top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .order_list_footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20rpx;
+      .num {
+        color: #ff4856;
+      }
+    }
+    .order_list_top {
+      padding-bottom: 26rpx;
+      border-bottom: 1px solid #efefef
+    }
+    .list {
+      background: #fff;
+      padding: 30rpx;
+      margin-top: 15rpx;
+    }
+    .btn_group {
+      display: flex;
+      align-items: center;
+      .btn {
+        font-size: 30rpx;
+        padding: 22rpx 35rpx;
+        text-align: center;
+        margin: 0 auto;
+        width: 100%;
+        -moz-border-radius: 15rpx;
+        /* Firefox */
+        -webkit-border-radius: 15rpx;
+        /* Safari 和 Chrome */
+        border-radius: 15rpx;
+        /* Opera 10.5+, 以及使用了IE-CSS3的IE浏览器 */
+      }
+      .btn_del {
+        color: #333;
+        border: 1px solid #ccc;
+      }
+      .btn_pay {
+        background: #ff4856;
+        color: #fff;
+        margin-left: 20rpx;
+      }
+    }
+  }
+
+  .good_list {
+    display: flex;
+    justify-content:space-between;
+    padding: 20rpx 0rpx;
+    border-bottom: 1px solid #efefef;
+    .goods{
+      width: 300rpx;
+    }
+  }
+  .image_box {
+    image {
+      width: 180rpx;
+      height: 180rpx;
+    }
+  }
+  .product_name {
+    color: #414141;
+    font-size: 32rpx;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+  }
+  .product_rule {
+    font-size: 26rpx;
+    color: #757575;
+    padding-top: 16rpx;
+  }
+  .product_info {
+    padding-top: 20rpx;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .price {
+    color: #de0000;
+    font-size: 34rpx;
+    font-weight: 600;
+  }
+
+  background: #fff;
+  padding: 20rpx;
+  .item-block {
+    display: flex;
+    margin-top: 20rpx;
+  }
+  .title {
+    padding-right: 10rpx;
+  }
+  .textarea {
+    height: 200rpx;
+    border-radius: 10rpx;
+    border: 1rpx solid #efefef;
+    padding: 10rpx;
+  }
+  .type_green{
+    margin-top: 100rpx;
+    margin: 10px;
+  }
+}
+
+</style>

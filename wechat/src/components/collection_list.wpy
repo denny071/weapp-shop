@@ -1,0 +1,192 @@
+<!--收藏or历史足迹列表-->
+<template name="cart-goods-list">
+  <view class="goodsList">
+    <repeat for="{{list}}" key="index" index="index" item="item">
+      <view class="list_box" wx:if="{{type == 0 && item.type == 'product'}}">
+        <swipeDelete :swipeData="item" @delItem.user="handleDelItem">
+        <navigator class="item_content" url="/pages/goods_detail?id={{item.data.product_id}}">
+          <view class="goods-info">
+            <view class="img-box">
+              <image src="{{item.data.image}}" class="img" />
+            </view>
+            <view class="text-box">
+              <view class="goods-title">{{item.data.title}}</view>
+              <view class="goods-price">¥ {{item.data.price}}</view>
+            </view>
+          </view>
+        </navigator>
+        </swipeDelete>
+      </view>
+      <view class="list_box"  wx:if="{{type == 1}}">
+        <swipeDelete :swipeData="item" @delItem.user="handleDelItem">
+          <navigator class="item_content" url="/pages/goods_detail?id={{item.id}}">
+            <view class="goods-info">
+              <view class="img-box">
+                <image src="{{item.image}}" class="img" />
+              </view>
+              <view class="text-box">
+                <view class="goods-title">{{item.title}}</view>
+                <view class="goods-price">¥ {{item.price}}</view>
+              </view>
+            </view>
+          </navigator>
+        </swipeDelete>
+      </view>
+    </repeat>
+  </view>
+</template>
+<script>
+import wepy from 'wepy';
+import {
+  SYSTEM_INFO,
+  USER_SPECICAL_INFO
+} from '@/utils/constant';
+import tip from '@/utils/tip'
+import api from '@/api/api';
+import SwipeDelete from './common/wepy-swipe-delete'
+import regeneratorRuntime from '@/utils/runtime.js'
+
+export default class CollecntionList extends wepy.component {
+  props = {
+    type :0,
+    list: {
+      type: Object,
+      default: []
+    }
+  }
+  components = {
+    swipeDelete: SwipeDelete
+  }
+
+  //商品取消收藏
+  async goodsUnFavorite(id) {
+    let that = this;
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openId = userSpecialInfo.openid;
+    const json = await api.productList({
+      method:"DELETE",
+      uri:"/"+id+"/favorite",
+      query: {
+        openId: openId,
+      }
+    });
+    if (json.statusCode == 204) {
+      //tip.toast("取消收藏成功");
+      let retList = [];
+      for (var i = 0; i < this.list.length; i++) {
+        if (this.list[i].id == id) {
+          continue;
+        } else {
+          retList.push(this.list[i]);
+        }
+      }
+      this.list = retList;
+    } else {
+      tip.error(json.data.msg)
+    }
+    that.$apply();
+  }
+
+  //删除浏览记录
+  async delUserBrowser(id) {
+    let that = this;
+    let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
+    let openid = userSpecialInfo.openid;
+    const json = await api.browseRecord({
+      method:"DELETE",
+      uri:"/"+id,
+      query: {
+        openid: openid,
+      }
+    });
+    if (json.statusCode == 204) {
+      let retList = [];
+      for (var i = 0; i < this.list.length; i++) {
+        if (this.list[i].id == id) {
+          continue;
+        } else {
+          retList.push(this.list[i]);
+        }
+      }
+      this.list = retList;
+    } else {
+      tip.error(json.data.msg)
+    }
+    that.$apply();
+  }
+
+  methods = {
+    handleDelItem(item) {
+      switch (this.type) {
+        case "0":
+          this.delUserBrowser(item.id);
+          break;
+        case "1":
+          this.goodsUnFavorite(item.id);
+          break;
+        default:
+      }
+    },
+    refreshList(val){
+       if (val==undefined) return;
+        this.list = val;
+        this.$apply();
+    }
+  }
+  events = {
+
+  }
+}
+
+</script>
+<style lang="less">
+.goodsList {
+  padding-top: 15rpx;
+}
+
+.goods-info {
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  padding: 15rpx 21rpx;
+  box-sizing: border-box;
+}
+
+.goods-info .img-box {
+  width: 175rpx;
+  height: 175rpx;
+  overflow: hidden;
+  margin-right: 20rpx;
+  background-color: #d8d8d8;
+}
+
+.goods-info .text-box {
+  width: 440rpx;
+  position: relative;
+}
+
+.goods-info .text-box .goods-title {
+  font-size: 32rpx;
+  color: #414141;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 10rpx 20rpx 5rpx 0;
+}
+
+.goods-info .text-box .goods-price {
+  font-size: 30rpx;
+  color: #ed601b;
+  padding-top: 30rpx;
+}
+
+.goods-info .img-box .img {
+  width: 175rpx;
+  height: 175rpx;
+}
+
+.list_box {
+  height: 200rpx;
+}
+
+</style>
