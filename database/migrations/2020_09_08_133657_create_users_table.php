@@ -32,7 +32,7 @@ class CreateUsersTable extends Migration
             $table->string('province')->nullable()->comment("所在省份");
             $table->string('city')->nullable()->comment("所在城市");
             $table->string('language')->nullable()->comment("使用语言");
-            $table->timestamp('last_login_at')->comment("最近登录");
+            $table->timestamp('last_login_at')->nullable()->comment("最近登录");
             $table->boolean('email_verified')->default(false)->comment("微信头像");
             $table->rememberToken();
             $table->timestamps();

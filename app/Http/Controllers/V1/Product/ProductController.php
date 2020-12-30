@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\SearchBuilders\ProductSearchBuilder;
 use App\Services\ProductService;
+use App\Transformers\ProductDetailTransformer;
 use App\Transformers\ProductTransformer;
 use App\Transformers\ReviewTransformer;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -141,7 +142,7 @@ class ProductController extends Controller
                 $reviews[] = (new ReviewTransformer())->transform($orderItem);
             }
         }
-        return $this->response->item($product, ProductTransformer::class)
+        return $this->response->item($product, ProductDetailTransformer::class)
             ->addMeta("favored", $favored)
             ->addMeta("reviews", $reviews)
             ->addMeta("review_count", $handler->count())

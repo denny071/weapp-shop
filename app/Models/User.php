@@ -16,6 +16,7 @@ class User extends Model
     protected $fillable = [
         'name',
         'avatar',
+        'weixin_avatar',
         'gender',
         'country',
         'province',

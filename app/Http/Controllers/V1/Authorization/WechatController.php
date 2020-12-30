@@ -35,7 +35,8 @@ class WechatController extends Controller
             [
                 "weixin_session_key" => $data['session_key'],
                 "name" => $request->name,
-                "wx_avatar" => $request->avatar,
+                "avatar" => $request->avatar,
+                "weixin_avatar" => $request->avatar,
                 "gender" => $request->gender,
                 "country" => $request->country,
                 "province" => $request->province,

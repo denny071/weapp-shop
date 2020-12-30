@@ -3,7 +3,7 @@
     <swiper class="swiper" indicator-active-color="{{indicatorActiveColor}}" indicator-dots="{{indicatorDots}}" autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}" circular="true">
       <block wx:for="{{adList}}" wx:key="key">
         <swiper-item>
-          <image src="{{item.picUrl}}" class="slide-image" @tap="goToAdvert({{item.advertUrl}})" />
+          <image src="{{item.picture_url}}" class="slide-image" @tap="goToAdvert({{item.link_url}})" />
         </swiper-item>
       </block>
     </swiper>
@@ -119,7 +119,7 @@ export default class Home extends wepy.page {
       query: {}
     });
    if (json.statusCode === 200) {
-      this.adList = json.data;
+      this.adList = json.data.data;
       this.$apply();
     } else {
 

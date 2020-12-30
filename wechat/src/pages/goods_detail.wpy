@@ -3,15 +3,29 @@
     <import src="../plugins/wxParse/wxParse.wxml" />
     <!--index.wxml-->
     <swiper indicator-dots="true" autoplay="true" interval="5000" duration="500" indicator-active-color="#ffc452" indicator-color="#efefef" class="swiper">
-
-        <swiper-item>
-          <image src="{{detail.image}}" data-src="{{detail.image}}" class="slide-image" @tap="previewImage" />
-        </swiper-item>
-
-        <swiper-item>
-          <image src="{{detail.image}}" data-src="{{detail.image}}" class="slide-image" @tap="previewImage" />
-        </swiper-item>
+        <block wx:for="{{detail.album_image}}"  wx:key="key">
+            <swiper-item>
+                <image src="{{item.picture_url}}" class="slide-image" @tap="previewImage" />
+            </swiper-item>
+        </block>
     </swiper>
+
+     <view class="buy_area new_ver">
+      <view class="priceWrap">
+          <view class="price_wrap">
+              <view class="price large_size">￥
+                  <em>1780</em>
+                  <view class="price_decimals">.00</view>
+              </view>
+              <view class="col_right">收藏</view>
+              <view class="col_right">降价提醒</view>
+          </view>
+      </view>
+      <view class="details_pinfo">
+        <text class="price">￥{{detail.price}}</text>
+      </view>
+    </view>
+
 
     <view class="details-msg">
       <view class="details-title">{{detail.title}}</view>
@@ -34,9 +48,10 @@
     </view>
     <view class="big_images">
       <view class="doc">
-        <view class="wxParse-p">
-          <template is="wxParse" data="{{wxParseData:detailInfo.nodes}}">
-          </template>
+         <view class="wxParse-p">
+            <block wx:for="{{detail.content_image}}"  wx:key="key">
+                <image src="{{item.picture_url}}" mode="widthFix" />
+            </block>
         </view>
       </view>
     </view>
@@ -47,10 +62,6 @@
       <!--矩阵商品列表模块-->
       <shopGridList :list.sync="similarProductList" ></shopGridList>
     </view>
-    <view class="spacing"></view>
-    <view class="spacing"></view>
-    <view class="spacing"></view>
-    <view class="spacing"></view>
     <view class="spacing"></view>
     <view class="spacing"></view>
 
@@ -189,7 +200,7 @@ export default class goodsDetail extends wepy.page {
     let that = this;
     let userSpecialInfo = wepy.getStorageSync(USER_SPECICAL_INFO) || {};
     let openid = userSpecialInfo.openid;
-    const json = await api.productDetail({
+    const json = await api.product({
       uri: "/"+option.id,
       query:{
         include:"skus",
@@ -199,11 +210,11 @@ export default class goodsDetail extends wepy.page {
     });
     if (json.statusCode === 200) {
       let data = json.data;
-      that.detail = data
+      that.detail = data.data
       that.commentList = data.meta.reviews
       that.reviewCount = data.meta.review_count
       that.similarProductList = data.meta.similar
-      WxParse.wxParse('detailInfo', 'html', that.detail.description, this);
+
     } else {
       if (json.data.msg) {
         tip.error(json.data.msg)
@@ -462,8 +473,10 @@ export default class goodsDetail extends wepy.page {
 .big_images {
   height: 100%;
   display: block;
+
   image {
-    width: 100%;
+   width: 100%;
+    height: 500px;
   }
 }
 
@@ -828,4 +841,36 @@ export default class goodsDetail extends wepy.page {
   border: 1px solid #ff4856;
 }
 
+
+
+
+.buy_area {
+    overflow: hidden;
+    background: #fff;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    .price_wrap{
+        position: relative;
+        margin-top: 12px;
+        margin-bottom: 0;
+        .price {
+            font-size: 16px;
+            font-family: JDZH-Regular;
+            line-height: 30px;
+            color: #f2270c;
+            display: inline-block;
+            .price_decimals{
+                font-size: 18px;
+            }
+            em {
+                font-size: 30px;
+            }
+
+        }
+    }
+    .col_right {
+        float: right;
+        margin-top: 1px;
+    }
+}
 </style>
