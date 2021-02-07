@@ -11,8 +11,10 @@ return [
         "document_data" => storage_path('app').DIRECTORY_SEPARATOR."DocData",
     ],
     "router_path" => "routes/api.php",
+    // 验证路径
+    "validate_path" => "/resource/validate/",
     // 文档uri
-    "router_prefix" => "apidoc",
+    "router_prefix" => "/apidoc",
     // 是否开启https
     "https" => true,
 

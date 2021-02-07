@@ -1,6 +1,6 @@
 <?php
 
-use Carbon\Carbon;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-   echo Carbon::now()->format("Y-m-d H:i:s");
-});
+
+// 首页
+Route::get('/', "HomeController@index")->name('home');

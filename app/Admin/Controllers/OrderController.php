@@ -70,7 +70,7 @@ class OrderController extends AdminController
        return Show::make($id,Order::with(['user']),function (Show $show) {
 
            $show->html(function ()  use ($show){
-               return view("order.show",[
+               return view("admin.order.show",[
                    "order" => $this,
                    "expressCompanyList" => ExpressCompany::where("status",1)->get()
                ]);

@@ -1,5 +1,13 @@
 <?php
 
+use Dingo\Api\Facade\Route;
+
+if (! function_exists('route_class')) {
+    function route_class()
+    {
+        return str_replace('.', '-', Route::currentRouteName());
+    }
+}
 if (! function_exists('get_test_image')) {
     /**
      * 添加表注释

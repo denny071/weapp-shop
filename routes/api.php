@@ -69,7 +69,7 @@ $api = app('Dingo\Api\Routing\Router');
 
 $api->version('v1', function ($api) {
 
-    $api->group(['namespace' => 'App\Http\Controllers\V1'], function ($api) {
+    $api->group(['namespace' => 'App\Http\Controllers\API\V1'], function ($api) {
 
         //@V1-authorization-认证-认证
         $api->group(['prefix' => 'authorization','namespace' => 'Authorization'], function ($api) {

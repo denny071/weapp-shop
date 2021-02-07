@@ -68,7 +68,7 @@ class UserController extends AdminController
     {
         return Show::make($id, new User(), function (Show $show) {
             $show->html(function () {
-                return view("user.show",["user" => $this]);
+                return view("admin.user.show",["user" => $this]);
             });
         });
     }
